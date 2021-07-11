@@ -12,7 +12,12 @@ def index(request):
 def entry(request, entry):
     markDowner = Markdown()
     entryPage = util.get_entry(entry)
-    return render(request, "encyclopedia/entry.html", {
-        "entry": markDowner.convert(entryPage),
-        "entryTitle": entry
-    })
+    if entryPage is None:
+        return render(request, "encyclopedia/nonExisting.html", {
+            "entryTitle": entry
+        })
+    else:
+        return render(request, "encyclopedia/entry.html", {
+            "entry": markDowner.convert(entryPage),
+            "entryTitle": entry
+        })
