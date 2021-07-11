@@ -4,6 +4,12 @@ from markdown2 import Markdown
 from . import util
 from django.http import HttpResponseRedirect
 from django.urls import reverse
+from django import forms
+
+
+class NewEntryForm(forms.Form):
+    title = forms.CharField(label="Entry title", widget=forms.TextInput(attrs={'class': 'form-control col-md-8 col-lg-8'}) ,max_length=24)
+    content = forms.CharField(widget=forms.Textarea(attrs={'class': 'form-control col-md-8 col-lg-8', "rows": 10}))
 
 
 def index(request):
@@ -39,4 +45,30 @@ def search(request):
             "entries": subStringQuery,
             "search": True,
             "value": value
+        })
+
+def newEntry(request):
+    if request.method == "POST":
+        form = NewEntryForm(request.POST)
+        if form.is_valid():
+            title = form.cleaned_data['title']
+            content = form.cleaned_data['content']
+            if util.get_entry(title) is None:
+                util.save_entry(title, content)
+                return HttpResponseRedirect(reverse("entry", kwargs={'entry': title}))
+            else:
+                return render(request, "encyclopedia/newEntry.html", {
+                    "form": form,
+                    "existingEntry": True,
+                    "entry": title
+                })
+        else: 
+            return render(request, "encyclopedia/newEntry.html", {
+                "form": form,
+                "existingEntry": False
+            })
+
+    else:
+        return render(request, "encyclopedia/newEntry.html", {
+            "form": NewEntryForm()
         })

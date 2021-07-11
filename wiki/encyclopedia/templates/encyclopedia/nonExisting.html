@@ -1,8 +1,10 @@
 {% extends 'encyclopedia/layout.html' %}
 
-{% block title%}{{ entryTitle }}{% endblock title%}
+{% block title%}{{ entryTitle }} not found{% endblock title%}
 
 {% block body %}
-    <h1>{{ entryTitle }}? (404)</h1>
-    <p>The entry you searched doesn't exists yet.</p>
+    <h1>{{ entryTitle }}?</h1>
+    <div class="alert alert-warning" role="alert">
+        The entry you searched doesn't exists yet, but you can create it. <a href="{% url 'newEntry' %}">Click here</a>
+    </div>    
 {% endblock body %}
