@@ -3,7 +3,11 @@
 {% block title %}New Entry{% endblock title %}
 
 {% block body %}
-    <h2>New Entry</h2>
+    {% if edit %}
+        <h2>Editing {{ entryTitle }}</h2>
+    {% else %}
+        <h2>New Entry</h2>
+    {% endif %}
     <div class="form-group">
         <form action="{% url 'newEntry' %}" method="POST">
             {% csrf_token %}
@@ -16,6 +20,4 @@
         This entry already exists. if you want to view it, <a href="/wiki/{{ entry }}">Click here</a>
     </div>
     {% endif %}
-
-
 {% endblock body %}

@@ -1,5 +1,6 @@
 from django.shortcuts import render
 import markdown2
+import secrets
 from markdown2 import Markdown
 from . import util
 from django.http import HttpResponseRedirect
@@ -8,8 +9,9 @@ from django import forms
 
 
 class NewEntryForm(forms.Form):
-    title = forms.CharField(label="Entry title", widget=forms.TextInput(attrs={'class': 'form-control col-md-8 col-lg-8'}) ,max_length=24)
+    title = forms.CharField(label="Entry title", widget=forms.TextInput(attrs={'class': 'form-control col-md-8 col-lg-8'}))
     content = forms.CharField(widget=forms.Textarea(attrs={'class': 'form-control col-md-8 col-lg-8', "rows": 10}))
+    edit = forms.BooleanField(initial=False, widget=forms.HiddenInput(), required=False)
 
 
 def index(request):
@@ -53,7 +55,7 @@ def newEntry(request):
         if form.is_valid():
             title = form.cleaned_data['title']
             content = form.cleaned_data['content']
-            if util.get_entry(title) is None:
+            if util.get_entry(title) is None or form.cleaned_data["edit"] is True:
                 util.save_entry(title, content)
                 return HttpResponseRedirect(reverse("entry", kwargs={'entry': title}))
             else:
@@ -72,3 +74,26 @@ def newEntry(request):
         return render(request, "encyclopedia/newEntry.html", {
             "form": NewEntryForm()
         })
+
+def edit(request, entry):
+    entryPage = util.get_entry(entry)
+    if entryPage is None:
+        return render(request, "encyclopedia/nonExisting.html", {
+            'entryTitle': entry
+        })
+    else:
+        form = NewEntryForm()
+        form.fields['title'].initial = entry
+        form.fields['title'].widget = forms.HiddenInput()
+        form.fields['content'].initial = entryPage
+        form.fields['edit'].initial = True
+        return render(request, "encyclopedia/newEntry.html", {
+            'form': form,
+            "edit": form.fields['edit'].initial,
+            "entryTitle": form.fields['title'].initial
+        })
+
+def random(request):
+    entries = util.list_entries()
+    randomPage = secrets.choice(entries)
+    return HttpResponseRedirect(reverse('entry', kwargs={'entry': randomPage}))
